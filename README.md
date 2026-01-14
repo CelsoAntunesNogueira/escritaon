@@ -15,20 +15,6 @@ Uma ferramenta web elegante e intuitiva para escritores organizarem eventos e pe
 - 🎨 **Interface Moderna** - Design responsivo com gradientes e efeitos visuais
 - ⚡ **Zero Dependências** - HTML, CSS e JavaScript puro
 
-## 🚀 Demo
-
-[Ver Demo ao Vivo](https://seu-site.netlify.app) _(substitua com seu link do Netlify)_
-
-## 📸 Screenshots
-
-### Visão Geral
-![Tela Principal](screenshot-main.png)
-
-### Adicionando Eventos
-![Modal de Eventos](screenshot-event.png)
-
-### Gerenciamento de Personagens
-![Personagens](screenshot-characters.png)
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -37,31 +23,6 @@ Uma ferramenta web elegante e intuitiva para escritores organizarem eventos e pe
 - JavaScript (ES6+)
 - LocalStorage API
 
-## 📦 Instalação
-
-### Opção 1: Download Direto
-
-1. Clone este repositório:
-```bash
-git clone https://github.com/seu-usuario/timeline-escritor.git
-```
-
-2. Abra o arquivo `index.html` no seu navegador
-
-### Opção 2: Deploy no Netlify
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/seu-usuario/timeline-escritor)
-
-1. Faça fork deste repositório
-2. Conecte seu repositório ao Netlify
-3. Deploy automático! ✨
-
-### Opção 3: GitHub Pages
-
-1. Faça fork do repositório
-2. Vá em Settings > Pages
-3. Selecione a branch `main` como source
-4. Seu site estará disponível em `https://seu-usuario.github.io/timeline-escritor`
 
 ## 💡 Como Usar
 
@@ -208,9 +169,6 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 ## 👨‍💻 Autor
 
 Desenvolvido com ❤️ para escritores organizarem suas histórias
-
-- GitHub: [@seu-usuario](https://github.com/seu-usuario)
-- Website: [seu-site.com](https://seu-site.com)
 
 ## 🙏 Agradecimentos
 
