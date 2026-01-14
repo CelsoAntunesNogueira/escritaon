@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Linha Temporal Interativa para Escritores</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -14,7 +15,12 @@
             <h1>📚 Linha Temporal da História</h1>
             <p>Organize eventos e personagens da sua narrativa</p>
         </div>
-
+    
+        <div class="view-toggle">
+            <button class="view-btn active" onclick="switchView('timeline')">📅 Timeline</button>
+            <button class="view-btn" onclick="switchView('calendar')">🗓️ Calendário</button>
+        </div>
+    
         <div class="main-grid">
             <div class="sidebar">
                 <div class="sidebar-header">
@@ -27,20 +33,43 @@
                     </div>
                 </div>
             </div>
-
+    
             <div class="timeline-section">
                 <div class="timeline-header">
-                    <h2>📅 Eventos</h2>
-                    <button class="btn btn-primary" onclick="openEventModal()">+ Adicionar Evento</button>
+                    <h2 id="viewTitle">📅 Eventos</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openEventModal()">+ Adicionar Evento</button>
+                        <div class="dropdown-menu">
+                            <button class="btn btn-purple" onclick="toggleDropdown()">💾 Exportar</button>
+                            <div id="exportDropdown" class="dropdown-content">
+                                <button onclick="exportJSON()">📄 Exportar JSON</button>
+                                <button onclick="exportPDF()">📕 Exportar PDF</button>
+                                <button onclick="exportDOC()">📘 Exportar DOC</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-purple" onclick="importData()">📂 Importar</button>
+                    </div>
                 </div>
-                <div class="timeline">
+    
+                <!-- Timeline View -->
+                <div id="timelineView" class="timeline active">
                     <div class="timeline-line"></div>
                     <div id="eventList"></div>
+                </div>
+    
+                <!-- Calendar View -->
+                <div id="calendarView" class="calendar-view">
+                    <div class="calendar-header">
+                        <button class="btn btn-small btn-primary" onclick="previousMonth()">← Anterior</button>
+                        <h3 id="currentMonth"></h3>
+                        <button class="btn btn-small btn-primary" onclick="nextMonth()">Próximo →</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <!-- Modal de Evento -->
     <div id="eventModal" class="modal">
         <div class="modal-content">
@@ -71,6 +100,14 @@
                     <textarea id="eventDescription" placeholder="Descreva o que acontece neste momento..."></textarea>
                 </div>
                 <div class="form-group">
+                    <label>Tags</label>
+                    <div class="tag-input-container">
+                        <input type="text" id="tagInput" placeholder="Adicione uma tag">
+                        <button type="button" class="btn btn-small btn-primary" onclick="addTag()">+</button>
+                    </div>
+                    <div class="tags-list" id="eventTagsList"></div>
+                </div>
+                <div class="form-group">
                     <label>Personagens Envolvidos</label>
                     <div class="checkbox-group" id="eventCharacters"></div>
                 </div>
@@ -82,7 +119,7 @@
             </form>
         </div>
     </div>
-
+    
     <!-- Modal de Personagem -->
     <div id="characterModal" class="modal">
         <div class="modal-content">
@@ -108,6 +145,12 @@
                     <label>Cor</label>
                     <div class="color-picker" id="colorPicker"></div>
                 </div>
+                <div class="form-group">
+                    <label>Relacionamentos</label>
+                    <div id="relationshipsContainer"></div>
+                    <button type="button" class="btn btn-small btn-primary" onclick="addRelationship()">+ Adicionar
+                        Relacionamento</button>
+                </div>
                 <div class="modal-actions">
                     <button type="submit" class="btn btn-purple" style="flex: 1;">Salvar</button>
                     <button type="button" class="btn" onclick="closeCharacterModal()"
@@ -116,6 +159,8 @@
             </form>
         </div>
     </div>
+    
+    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImport(event)">
 
     <script src="script.js"></script>
 </body>
