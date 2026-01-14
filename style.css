@@ -33,6 +33,30 @@
      color: #cbd5e1;
  }
 
+ .view-toggle {
+     display: flex;
+     gap: 0.5rem;
+     margin-bottom: 1rem;
+     background: rgba(255, 255, 255, 0.1);
+     padding: 0.5rem;
+     border-radius: 0.5rem;
+     width: fit-content;
+ }
+
+ .view-btn {
+     padding: 0.5rem 1rem;
+     border: none;
+     background: transparent;
+     color: white;
+     border-radius: 0.5rem;
+     cursor: pointer;
+     transition: all 0.3s;
+ }
+
+ .view-btn.active {
+     background: rgba(255, 255, 255, 0.2);
+ }
+
  .main-grid {
      display: grid;
      grid-template-columns: 300px 1fr;
@@ -162,6 +186,8 @@
      justify-content: space-between;
      align-items: center;
      margin-bottom: 1.5rem;
+     flex-wrap: wrap;
+     gap: 1rem;
  }
 
  .timeline-header h2 {
@@ -169,6 +195,12 @@
      display: flex;
      align-items: center;
      gap: 0.5rem;
+ }
+
+ .header-actions {
+     display: flex;
+     gap: 0.5rem;
+     flex-wrap: wrap;
  }
 
  .timeline {
@@ -220,6 +252,7 @@
      align-items: center;
      gap: 0.5rem;
      margin-bottom: 0.5rem;
+     flex-wrap: wrap;
  }
 
  .event-category {
@@ -256,17 +289,76 @@
      opacity: 1;
  }
 
- .event-characters {
+ .event-characters,
+ .event-tags {
      display: flex;
      flex-wrap: wrap;
      gap: 0.5rem;
      margin-top: 1rem;
  }
 
- .event-character-tag {
+ .event-character-tag,
+ .tag-badge {
      padding: 0.25rem 0.75rem;
      border-radius: 1rem;
      font-size: 0.875rem;
+ }
+
+ .tag-badge {
+     background: rgba(255, 255, 255, 0.1);
+     border: 1px solid rgba(255, 255, 255, 0.2);
+ }
+
+ .calendar-view {
+     display: none;
+ }
+
+ .calendar-view.active {
+     display: block;
+ }
+
+ .calendar-grid {
+     display: grid;
+     grid-template-columns: repeat(7, 1fr);
+     gap: 0.5rem;
+     margin-top: 1rem;
+ }
+
+ .calendar-header {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     margin-bottom: 1rem;
+ }
+
+ .calendar-nav {
+     display: flex;
+     gap: 0.5rem;
+ }
+
+ .calendar-day {
+     background: rgba(255, 255, 255, 0.05);
+     border-radius: 0.5rem;
+     padding: 0.5rem;
+     min-height: 100px;
+     position: relative;
+ }
+
+ .calendar-day-number {
+     font-weight: 600;
+     margin-bottom: 0.5rem;
+ }
+
+ .calendar-event {
+     background: rgba(59, 130, 246, 0.5);
+     padding: 0.25rem;
+     border-radius: 0.25rem;
+     font-size: 0.75rem;
+     margin-bottom: 0.25rem;
+     cursor: pointer;
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
  }
 
  .modal {
@@ -410,10 +502,91 @@
      color: #94a3b8;
  }
 
- .icon {
+ .tag-input-container {
+     display: flex;
+     gap: 0.5rem;
+     margin-bottom: 0.5rem;
+ }
+
+ .tag-input-container input {
+     flex: 1;
+ }
+
+ .tags-list {
+     display: flex;
+     flex-wrap: wrap;
+     gap: 0.5rem;
+ }
+
+ .tag-item {
+     background: rgba(255, 255, 255, 0.1);
+     padding: 0.25rem 0.75rem;
+     border-radius: 1rem;
+     font-size: 0.875rem;
+     display: flex;
+     align-items: center;
+     gap: 0.5rem;
+ }
+
+ .tag-remove {
+     cursor: pointer;
+     opacity: 0.7;
+ }
+
+ .tag-remove:hover {
+     opacity: 1;
+ }
+
+ .relationships-section {
+     margin-top: 1rem;
+     padding: 1rem;
+     background: rgba(255, 255, 255, 0.05);
+     border-radius: 0.5rem;
+ }
+
+ .relationship-item {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     padding: 0.5rem;
+     margin-bottom: 0.5rem;
+     background: rgba(255, 255, 255, 0.05);
+     border-radius: 0.5rem;
+ }
+
+ .dropdown-menu {
+     position: relative;
      display: inline-block;
-     width: 1em;
-     height: 1em;
+ }
+
+ .dropdown-content {
+     display: none;
+     position: absolute;
+     background: #1e293b;
+     min-width: 200px;
+     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+     border-radius: 0.5rem;
+     z-index: 1;
+     right: 0;
+ }
+
+ .dropdown-content.active {
+     display: block;
+ }
+
+ .dropdown-content button {
+     width: 100%;
+     text-align: left;
+     padding: 0.75rem 1rem;
+     border: none;
+     background: none;
+     color: white;
+     cursor: pointer;
+     transition: background 0.3s;
+ }
+
+ .dropdown-content button:hover {
+     background: rgba(255, 255, 255, 0.1);
  }
 
  @media (max-width: 768px) {
@@ -427,5 +600,15 @@
 
      .header h1 {
          font-size: 1.75rem;
+     }
+
+     .calendar-grid {
+         grid-template-columns: repeat(7, 1fr);
+         gap: 0.25rem;
+     }
+
+     .calendar-day {
+         min-height: 60px;
+         padding: 0.25rem;
      }
  }
