@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linha Temporal Interativa para Escritores</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Linha Temporal da História</h1>
+            <p>Organize eventos e personagens da sua narrativa</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>👤 Personagens</h2>
+                    <button class="btn btn-purple btn-small" onclick="openCharacterModal()">+</button>
+                </div>
+                <div class="character-list" id="characterList">
+                    <div class="character-item" onclick="filterByCharacter(null)">
+                        <div class="character-name">Todos os eventos</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-section">
+                <div class="timeline-header">
+                    <h2>📅 Eventos</h2>
+                    <button class="btn btn-primary" onclick="openEventModal()">+ Adicionar Evento</button>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-line"></div>
+                    <div id="eventList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Evento -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="eventModalTitle">Novo Evento</h3>
+                <button class="close-btn" onclick="closeEventModal()">&times;</button>
+            </div>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" id="eventTitle" required placeholder="Ex: Encontro com o mentor">
+                </div>
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="eventDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="eventCategory">
+                        <option value="plot">Enredo</option>
+                        <option value="character">Personagem</option>
+                        <option value="world">Mundo</option>
+                        <option value="conflict">Conflito</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="eventDescription" placeholder="Descreva o que acontece neste momento..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Personagens Envolvidos</label>
+                    <div class="checkbox-group" id="eventCharacters"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Salvar</button>
+                    <button type="button" class="btn" onclick="closeEventModal()"
+                        style="background: rgba(255,255,255,0.1);">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Personagem -->
+    <div id="characterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="characterModalTitle">Novo Personagem</h3>
+                <button class="close-btn" onclick="closeCharacterModal()">&times;</button>
+            </div>
+            <form id="characterForm">
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input type="text" id="characterName" required placeholder="Ex: João Silva">
+                </div>
+                <div class="form-group">
+                    <label>Papel</label>
+                    <input type="text" id="characterRole" placeholder="Ex: Protagonista, Vilão, Aliado...">
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="characterDescription"
+                        placeholder="Características, personalidade, história..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Cor</label>
+                    <div class="color-picker" id="colorPicker"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-purple" style="flex: 1;">Salvar</button>
+                    <button type="button" class="btn" onclick="closeCharacterModal()"
+                        style="background: rgba(255,255,255,0.1);">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
