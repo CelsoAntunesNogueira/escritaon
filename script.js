@@ -16,8 +16,11 @@ let editingEventId = null;
 let editingCharacterId = null;
 let selectedCharacterId = null;
 let selectedColor = colors[0];
+let currentTags = [];
+let currentRelationships = [];
+let currentView = 'timeline';
+let currentDate = new Date();
 
-// Funções de armazenamento usando localStorage
 function loadData() {
     try {
         const eventsData = localStorage.getItem('timeline-events');
@@ -33,6 +36,7 @@ function loadData() {
 
     renderCharacters();
     renderEvents();
+    renderCalendar();
 }
 
 function saveEvents() {
@@ -53,6 +57,382 @@ function saveCharacters() {
     }
 }
 
+function switchView(view) {
+    currentView = view;
+    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    if (view === 'timeline') {
+        document.getElementById('timelineView').classList.add('active');
+        document.getElementById('calendarView').classList.remove('active');
+        document.getElementById('viewTitle').textContent = '📅 Eventos';
+    } else {
+        document.getElementById('timelineView').classList.remove('active');
+        document.getElementById('calendarView').classList.add('active');
+        document.getElementById('viewTitle').textContent = '🗓️ Calendário';
+        renderCalendar();
+    }
+}
+
+function renderCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const monthYear = document.getElementById('currentMonth');
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    monthYear.textContent = new Date(year, month).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    grid.innerHTML = '';
+
+    // Dias da semana
+    const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    weekDays.forEach(day => {
+        const header = document.createElement('div');
+        header.style.fontWeight = '600';
+        header.style.textAlign = 'center';
+        header.textContent = day;
+        grid.appendChild(header);
+    });
+
+    // Dias vazios no início
+    for (let i = 0; i < firstDay; i++) {
+        grid.appendChild(document.createElement('div'));
+    }
+
+    // Dias do mês
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+
+        const dayNumber = document.createElement('div');
+        dayNumber.className = 'calendar-day-number';
+        dayNumber.textContent = day;
+        dayDiv.appendChild(dayNumber);
+
+        // Adicionar eventos do dia
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayEvents = events.filter(e => e.date === dateStr);
+
+        dayEvents.forEach(event => {
+            const eventDiv = document.createElement('div');
+            eventDiv.className = 'calendar-event';
+            eventDiv.style.backgroundColor = categories[event.category].color + '80';
+            eventDiv.textContent = event.title;
+            eventDiv.onclick = () => editEvent(event.id);
+            dayDiv.appendChild(eventDiv);
+        });
+
+        grid.appendChild(dayDiv);
+    }
+}
+
+function previousMonth() {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+}
+
+function nextMonth() {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+}
+
+function addTag() {
+    const input = document.getElementById('tagInput');
+    const tag = input.value.trim();
+
+    if (tag && !currentTags.includes(tag)) {
+        currentTags.push(tag);
+        renderTags();
+        input.value = '';
+    }
+}
+
+function removeTag(tag) {
+    currentTags = currentTags.filter(t => t !== tag);
+    renderTags();
+}
+
+function renderTags() {
+    const container = document.getElementById('eventTagsList');
+    container.innerHTML = '';
+
+    currentTags.forEach(tag => {
+        const tagDiv = document.createElement('div');
+        tagDiv.className = 'tag-item';
+        tagDiv.innerHTML = `
+                    <span>${tag}</span>
+                    <span class="tag-remove" onclick="removeTag('${tag}')">×</span>
+                `;
+        container.appendChild(tagDiv);
+    });
+}
+
+function addRelationship() {
+    const container = document.getElementById('relationshipsContainer');
+    const relationDiv = document.createElement('div');
+    relationDiv.className = 'relationship-item';
+
+    const select = document.createElement('select');
+    select.style.flex = '1';
+    select.style.marginRight = '0.5rem';
+    select.innerHTML = '<option value="">Selecione um personagem</option>';
+
+    characters.forEach(char => {
+        if (!editingCharacterId || char.id !== editingCharacterId) {
+            select.innerHTML += `<option value="${char.id}">${char.name}</option>`;
+        }
+    });
+
+    const relationInput = document.createElement('input');
+    relationInput.type = 'text';
+    relationInput.placeholder = 'Ex: Amigo, Inimigo, Irmão...';
+    relationInput.style.flex = '1';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-small';
+    removeBtn.style.background = '#ef4444';
+    removeBtn.textContent = '×';
+    removeBtn.onclick = () => relationDiv.remove();
+
+    relationDiv.appendChild(select);
+    relationDiv.appendChild(relationInput);
+    relationDiv.appendChild(removeBtn);
+    container.appendChild(relationDiv);
+}
+
+function getRelationships() {
+    const items = document.querySelectorAll('#relationshipsContainer .relationship-item');
+    const relationships = [];
+
+    items.forEach(item => {
+        const select = item.querySelector('select');
+        const input = item.querySelector('input');
+
+        if (select.value && input.value) {
+            relationships.push({
+                characterId: parseInt(select.value),
+                type: input.value
+            });
+        }
+    });
+
+    return relationships;
+}
+
+function renderRelationships(relationships = []) {
+    const container = document.getElementById('relationshipsContainer');
+    container.innerHTML = '';
+
+    relationships.forEach(rel => {
+        addRelationship();
+        const items = container.querySelectorAll('.relationship-item');
+        const lastItem = items[items.length - 1];
+        lastItem.querySelector('select').value = rel.characterId;
+        lastItem.querySelector('input').value = rel.type;
+    });
+}
+
+function toggleDropdown() {
+    const dropdown = document.getElementById('exportDropdown');
+    dropdown.classList.toggle('active');
+}
+
+document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('exportDropdown');
+    if (!e.target.closest('.dropdown-menu')) {
+        dropdown.classList.remove('active');
+    }
+});
+
+function exportJSON() {
+    const data = {
+        events: events,
+        characters: characters,
+        exportDate: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `timeline-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toggleDropdown();
+}
+
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    let y = 20;
+    doc.setFontSize(16);
+    doc.text('Linha Temporal da História', 20, y);
+    y += 10;
+
+    doc.setFontSize(10);
+    doc.text(`Exportado em: ${new Date().toLocaleDateString('pt-BR')}`, 20, y);
+    y += 15;
+
+    doc.setFontSize(14);
+    doc.text('Personagens:', 20, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    characters.forEach(char => {
+        if (y > 270) {
+            doc.addPage();
+            y = 20;
+        }
+        doc.text(`• ${char.name}${char.role ? ' - ' + char.role : ''}`, 25, y);
+        y += 6;
+
+        if (char.relationships && char.relationships.length > 0) {
+            char.relationships.forEach(rel => {
+                const relChar = characters.find(c => c.id === rel.characterId);
+                if (relChar) {
+                    doc.text(`  → ${rel.type}: ${relChar.name}`, 30, y);
+                    y += 5;
+                }
+            });
+        }
+    });
+
+    y += 10;
+    doc.setFontSize(14);
+    doc.text('Eventos:', 20, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    events.forEach(event => {
+        if (y > 270) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.text(`${formatDate(event.date)} - ${event.title}`, 25, y);
+        y += 6;
+        doc.text(`Categoria: ${categories[event.category].label}`, 30, y);
+        y += 5;
+
+        if (event.description) {
+            const lines = doc.splitTextToSize(event.description, 160);
+            lines.forEach(line => {
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.text(line, 30, y);
+                y += 5;
+            });
+        }
+
+        if (event.tags && event.tags.length > 0) {
+            doc.text(`Tags: ${event.tags.join(', ')}`, 30, y);
+            y += 5;
+        }
+
+        y += 5;
+    });
+
+    doc.save(`timeline-${new Date().toISOString().split('T')[0]}.pdf`);
+    toggleDropdown();
+}
+
+function exportDOC() {
+    let content = `LINHA TEMPORAL DA HISTÓRIA\n`;
+    content += `Exportado em: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+    content += `${'='.repeat(50)}\n\n`;
+
+    content += `PERSONAGENS\n\n`;
+    characters.forEach(char => {
+        content += `• ${char.name}${char.role ? ' - ' + char.role : ''}\n`;
+        if (char.description) {
+            content += `  ${char.description}\n`;
+        }
+        if (char.relationships && char.relationships.length > 0) {
+            char.relationships.forEach(rel => {
+                const relChar = characters.find(c => c.id === rel.characterId);
+                if (relChar) {
+                    content += `  → ${rel.type}: ${relChar.name}\n`;
+                }
+            });
+        }
+        content += `\n`;
+    });
+
+    content += `\n${'='.repeat(50)}\n\n`;
+    content += `EVENTOS\n\n`;
+
+    events.forEach(event => {
+        content += `${formatDate(event.date)} - ${event.title}\n`;
+        content += `Categoria: ${categories[event.category].label}\n`;
+
+        if (event.description) {
+            content += `${event.description}\n`;
+        }
+
+        if (event.characters && event.characters.length > 0) {
+            const eventChars = characters.filter(c => event.characters.includes(c.id));
+            content += `Personagens: ${eventChars.map(c => c.name).join(', ')}\n`;
+        }
+
+        if (event.tags && event.tags.length > 0) {
+            content += `Tags: ${event.tags.join(', ')}\n`;
+        }
+
+        content += `\n${'-'.repeat(50)}\n\n`;
+    });
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `timeline-${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toggleDropdown();
+}
+
+function importData() {
+    document.getElementById('importFile').click();
+}
+
+function handleImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+
+            if (confirm('Isso substituirá todos os dados atuais. Deseja continuar?')) {
+                events = data.events || [];
+                characters = data.characters || [];
+
+                saveEvents();
+                saveCharacters();
+
+                renderCharacters();
+                renderEvents();
+                renderCalendar();
+
+                alert('Dados importados com sucesso!');
+            }
+        } catch (error) {
+            alert('Erro ao importar dados. Verifique se o arquivo é válido.');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
 function renderCharacters() {
     const list = document.getElementById('characterList');
     const firstItem = list.firstElementChild;
@@ -64,12 +444,25 @@ function renderCharacters() {
         item.className = 'character-item' + (selectedCharacterId === char.id ? ' active' : '');
         item.onclick = () => filterByCharacter(char.id);
 
+        let relationshipsHTML = '';
+        if (char.relationships && char.relationships.length > 0) {
+            const relTexts = char.relationships.map(rel => {
+                const relChar = characters.find(c => c.id === rel.characterId);
+                return relChar ? `${rel.type}: ${relChar.name}` : '';
+            }).filter(Boolean);
+
+            if (relTexts.length > 0) {
+                relationshipsHTML = `<div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">${relTexts.join(', ')}</div>`;
+            }
+        }
+
         item.innerHTML = `
                     <div class="character-info">
                         <div class="character-color" style="background-color: ${char.color}"></div>
-                        <div>
+                        <div style="flex: 1;">
                             <div class="character-name">${char.name}</div>
                             ${char.role ? `<div class="character-role">${char.role}</div>` : ''}
+                            ${relationshipsHTML}
                         </div>
                     </div>
                     <div class="character-actions">
@@ -115,6 +508,11 @@ function renderEvents() {
                             <button class="btn btn-small" style="background: #ef4444;" onclick="deleteEvent(${event.id})">🗑️</button>
                         </div>
                     </div>
+                    ${event.tags && event.tags.length > 0 ? `
+                        <div class="event-tags">
+                            ${event.tags.map(tag => `<span class="tag-badge">${tag}</span>`).join('')}
+                        </div>
+                    ` : ''}
                     ${eventChars.length > 0 ? `
                         <div class="event-characters">
                             ${eventChars.map(c => `
@@ -142,20 +540,24 @@ function filterByCharacter(charId) {
 
 function openEventModal() {
     editingEventId = null;
+    currentTags = [];
     document.getElementById('eventModalTitle').textContent = 'Novo Evento';
     document.getElementById('eventForm').reset();
     renderEventCharacters();
+    renderTags();
     document.getElementById('eventModal').classList.add('active');
 }
 
 function closeEventModal() {
     document.getElementById('eventModal').classList.remove('active');
     editingEventId = null;
+    currentTags = [];
 }
 
 function editEvent(id) {
     const event = events.find(e => e.id === id);
     editingEventId = id;
+    currentTags = event.tags || [];
 
     document.getElementById('eventModalTitle').textContent = 'Editar Evento';
     document.getElementById('eventTitle').value = event.title;
@@ -164,6 +566,7 @@ function editEvent(id) {
     document.getElementById('eventDescription').value = event.description;
 
     renderEventCharacters(event.characters);
+    renderTags();
     document.getElementById('eventModal').classList.add('active');
 }
 
@@ -172,6 +575,7 @@ function deleteEvent(id) {
         events = events.filter(e => e.id !== id);
         saveEvents();
         renderEvents();
+        renderCalendar();
     }
 }
 
@@ -203,6 +607,7 @@ document.getElementById('eventForm').addEventListener('submit', (e) => {
         category: document.getElementById('eventCategory').value,
         description: document.getElementById('eventDescription').value,
         characters: selectedChars,
+        tags: currentTags,
         timestamp: new Date(document.getElementById('eventDate').value).getTime()
     };
 
@@ -216,21 +621,25 @@ document.getElementById('eventForm').addEventListener('submit', (e) => {
     events.sort((a, b) => a.timestamp - b.timestamp);
     saveEvents();
     renderEvents();
+    renderCalendar();
     closeEventModal();
 });
 
 function openCharacterModal() {
     editingCharacterId = null;
+    currentRelationships = [];
     document.getElementById('characterModalTitle').textContent = 'Novo Personagem';
     document.getElementById('characterForm').reset();
     selectedColor = colors[0];
     renderColorPicker();
+    renderRelationships();
     document.getElementById('characterModal').classList.add('active');
 }
 
 function closeCharacterModal() {
     document.getElementById('characterModal').classList.remove('active');
     editingCharacterId = null;
+    currentRelationships = [];
 }
 
 function editCharacter(id) {
@@ -244,6 +653,7 @@ function editCharacter(id) {
     document.getElementById('characterDescription').value = char.description;
 
     renderColorPicker();
+    renderRelationships(char.relationships || []);
     document.getElementById('characterModal').classList.add('active');
 }
 
@@ -253,6 +663,12 @@ function deleteCharacter(id) {
         events = events.map(e => ({
             ...e,
             characters: e.characters.filter(cId => cId !== id)
+        }));
+
+        // Remove relacionamentos
+        characters = characters.map(c => ({
+            ...c,
+            relationships: (c.relationships || []).filter(r => r.characterId !== id)
         }));
 
         saveCharacters();
@@ -285,7 +701,8 @@ document.getElementById('characterForm').addEventListener('submit', (e) => {
         name: document.getElementById('characterName').value,
         role: document.getElementById('characterRole').value,
         description: document.getElementById('characterDescription').value,
-        color: selectedColor
+        color: selectedColor,
+        relationships: getRelationships()
     };
 
     if (editingCharacterId) {
@@ -301,5 +718,12 @@ document.getElementById('characterForm').addEventListener('submit', (e) => {
     closeCharacterModal();
 });
 
-// Carregar dados ao iniciar
+// Enter para adicionar tag
+document.getElementById('tagInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addTag();
+    }
+});
+
 loadData();
